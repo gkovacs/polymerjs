@@ -1,4 +1,4 @@
-import "micro";
+import "./micro";
 
 Polymer.Base._addFeature({
     _prepTemplate: function () {

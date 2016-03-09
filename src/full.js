@@ -1,4 +1,4 @@
-import "mini";
+import "./mini";
 
 Polymer.nar = [];
 Polymer.Annotations = {
