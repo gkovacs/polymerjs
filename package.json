@@ -1,6 +1,6 @@
 {
   "name": "polymerjs",
-  "version": "1.0.1",
+  "version": "1.0.11",
   "scripts": {
     "build": "babel src -d compiled && uglifyjs compiled/full.js > full.js && uglifyjs compiled/micro.js > micro.js && uglifyjs compiled/mini.js > mini.js"
   },
