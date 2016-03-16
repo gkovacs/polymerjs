@@ -165,6 +165,7 @@ import {registerElement} from "polymerjs/register";
 registerElement(MyCoolElement);
 ```
 
+
 Then you can use it like you normally would, either declaratively: 
 ```html
 <my-cool-element></my-cool-element
@@ -174,7 +175,29 @@ or imperatively:
 new MyCoolElement();
 ```
 
-This enables you to do cool stuff you wouldn't otherwise be able to do.
+You might need to register styles globally. One example could be key frames for css animations. For this, use the provided method `registerStyles`:
+```javascript
+
+import {registerStyles} from "polymerjs/register";
+
+const KEY_FRAMES = `
+      @-webkit-keyframes audio-bar {
+          0% { -webkit-transform: scale3d(1,1,1); background: ${WHITE}; }
+          50% { -webkit-transform: scale3d(1,1.3,1); background: ${DARK_YELLOW}; }
+          100% { -webkit-transform: scale3d(1,1,1); background: ${WHITE}; }
+      }
+    
+      @keyframes audio-bar {
+          0% { transform: scale3d(1,1,1); background: background: ${WHITE}; }
+          50% { transform: scale3d(1,1.3,1); background: ${DARK_YELLOW}; }
+          100% { transform: scale3d(1,1,1); background: ${WHITE}; }
+      }
+`;
+
+registerStyles(KEY_FRAMES);
+```
+
+All of this enables you to do cool stuff you wouldn't otherwise be able to do.
 
 For instance, here's a cool take on reusing styles by using string interpolation:
 
