@@ -274,7 +274,6 @@ Polymer.telemetry.instanceCount = 0;
 Polymer.Element = function () {
 };
 Polymer.Element.prototype = Polymer.Base;
-Polymer.Base.constructor = Polymer.Element;
 (function () {
     var modules = {};
     var lcModules = {};
@@ -6568,7 +6567,6 @@ Polymer.Templatizer = {
             _constructor.call(this, model, host);
         };
         ctor.prototype = archetype;
-        archetype.constructor = ctor;
         template._content._ctor = ctor;
         this.ctor = ctor;
     },
