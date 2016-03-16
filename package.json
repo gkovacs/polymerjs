@@ -2,7 +2,7 @@
   "name": "polymerjs",
   "version": "1.0.11",
   "scripts": {
-    "build": "babel src -d compiled && uglifyjs compiled/full.js > full.js && uglifyjs compiled/micro.js > micro.js && uglifyjs compiled/mini.js > mini.js"
+    "build": "babel src -d ./"
   },
   "description": "The Polymer library in a nice, frequently updated NPM package",
   "main": "full.js",
@@ -23,7 +23,6 @@
     "babel-cli": "^6.6.5",
     "babel-plugin-transform-es2015-modules-amd": "^6.6.5",
     "install": "^0.5.6",
-    "npm": "^3.8.0",
-    "uglify-js": "^2.6.2"
+    "npm": "^3.8.0"
   }
 }
