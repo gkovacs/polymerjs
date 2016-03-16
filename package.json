@@ -4,7 +4,7 @@
   "scripts": {
     "build": "babel src -d ./"
   },
-  "description": "The Polymer library in a nice, frequently updated NPM package",
+  "description": "The Polymer library in a nice, frequently updated NPM package with support for imperative programming and extending other custom elements.",
   "main": "full.js",
   "repository": {
     "type": "git",
