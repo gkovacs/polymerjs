@@ -260,5 +260,9 @@ Well, I think Polymer is a great library and that Web Components is the way to g
 
 Hopefully, this implementation of Polymer will serve as inspiration or even as the foundation of your next Polymer project.
 
+# License
+
+The Polymer library uses a BSD-like license available [here](https://raw.githubusercontent.com/Polymer/polymer/master/LICENSE.txt)
+
 [npm-url]: https://npmjs.org/package/polymerjs
 [npm-image]: https://badge.fury.io/js/polymerjs.svg
