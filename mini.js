@@ -260,7 +260,6 @@ define(['exports'], function (exports) {
     Polymer.telemetry.instanceCount = 0;
     Polymer.Element = function () {};
     Polymer.Element.prototype = Polymer.Base;
-    Polymer.Base.constructor = Polymer.Element;
     (function () {
         var modules = {};
         var lcModules = {};
