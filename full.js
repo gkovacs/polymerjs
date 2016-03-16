@@ -6448,7 +6448,6 @@ define(['exports'], function (exports) {
                 _constructor.call(this, model, host);
             };
             ctor.prototype = archetype;
-            archetype.constructor = ctor;
             template._content._ctor = ctor;
             this.ctor = ctor;
         },
