@@ -237,16 +237,19 @@ For both of these libraries, the template code is written directly from code (in
 Trying to accomplish the same in Polymer has proved to be very burdensome. Here's my thoughts on why:
 
 **1. Dependencies**:
+
 Polymer is a library around Web Components and thus it expects you to use HTML Imports for loading the dependencies for a custom element. The result is that you end up with two separate dependency systems and branches - Which is confusing and just feels *"not quite right"*. The Polymer team has tried to solve this by designing the IMD (Import Module Definition) which is compatible with AMD (which ES2015 modules are often transpiled to) but doesn't load anything. All it does is to define and resolve modules, but it still relies on HTML imports for loading which ultimately puts us in the same position as without IMD - two ways to declare dependencies in the same project.
 
-**2. The Imperative approach**
+**2. The Imperative approach**:
+
 In Polymer, you can define your element as a ES2015 class and wrap Polymer around it. Then you can do stuff like this in the 'created' callback: 'this.innerHTML = "Hello Earth!"'. However, this has its limitations. Polymer parses the template during registration time and thus you can't do this in the 'created' callback: 
 ```javascript
 this.innerHTML = "Hello [[planet]]";
 ```
 This goes for styles too. Under Shady DOM, the lightweight Shadow DOM alternative bundled with Polymer, a style scope is attached to each element. But each element is parsed for style tags during registration time too. Polymer did have a way of binding post-registration in the developer preview, but the performance impact was huge, they found.
 
-3. It uses Bower
+**3. It uses Bower**:
+
 Bower is a tool for handling project package dependencies, but NPM has grown to be the go-to package manager since then. By using Bower, users are often required to have separate bower.json and package.json files instead of being able to list all dependencies in the same place. 
 
 Well, I think Polymer is a great library and that Web Components is the way to go minus the HTML imports draft which it seems that browser vendors is not really implementing either. I think we can reap all of the benefits of Polymer and combine them with the modern approach to building client-side rendered web apps. Here is how I've reimagined the approach:
