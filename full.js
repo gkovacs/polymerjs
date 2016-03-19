@@ -20,7 +20,7 @@ define(['exports'], function (exports) {
         The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
         Code distributed by Google as part of the polymer project is also
     subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-    */
+        */
 
     (function () {
         function resolve() {
@@ -178,96 +178,118 @@ define(['exports'], function (exports) {
     }
     Polymer.ImportStatus = Polymer.RenderStatus;
     Polymer.ImportStatus.whenLoaded = Polymer.ImportStatus.whenReady;
-    Polymer.Base = {
-        __isPolymerInstance__: true,
-        _addFeature: function (feature) {
-            this.extend(this, feature);
-        },
-        registerCallback: function () {
-            this._desugarBehaviors();
-            this._doBehavior('beforeRegister');
-            this._registerFeatures();
-            this._doBehavior('registered');
-        },
-        createdCallback: function () {
-            Polymer.telemetry.instanceCount++;
-            this.root = this;
-            this._doBehavior('created');
-            this._initFeatures();
-        },
-        attachedCallback: function () {
-            var self = this;
-            Polymer.RenderStatus.whenReady(function () {
-                self.isAttached = true;
-                self._doBehavior('attached');
-            });
-        },
-        detachedCallback: function () {
-            this.isAttached = false;
-            this._doBehavior('detached');
-        },
-        attributeChangedCallback: function (name, oldValue, newValue) {
-            this._attributeChangedImpl(name);
-            this._doBehavior('attributeChanged', [name, oldValue, newValue]);
-        },
-        _attributeChangedImpl: function (name) {
-            this._setAttributeToProperty(this, name);
-        },
-        extend: function (prototype, api) {
-            if (prototype && api) {
-                var n$ = Object.getOwnPropertyNames(api);
-                for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
-                    this.copyOwnProperty(n, api, prototype);
+    (function () {
+        'use strict';
+
+        var settings = Polymer.Settings;
+        Polymer.Base = {
+            __isPolymerInstance__: true,
+            _addFeature: function (feature) {
+                this.extend(this, feature);
+            },
+            registerCallback: function () {
+                this._desugarBehaviors();
+                this._doBehavior('beforeRegister');
+                this._registerFeatures();
+                if (!settings.lazyRegister) {
+                    this.ensureRegisterFinished();
                 }
+            },
+            createdCallback: function () {
+                if (!this.__hasRegisterFinished) {
+                    this._ensureRegisterFinished(this.__proto__);
+                }
+                Polymer.telemetry.instanceCount++;
+                this.root = this;
+                this._doBehavior('created');
+                this._initFeatures();
+            },
+            ensureRegisterFinished: function () {
+                this._ensureRegisterFinished(this);
+            },
+            _ensureRegisterFinished: function (proto) {
+                if (proto.__hasRegisterFinished !== proto.is) {
+                    proto.__hasRegisterFinished = proto.is;
+                    if (proto._finishRegisterFeatures) {
+                        proto._finishRegisterFeatures();
+                    }
+                    proto._doBehavior('registered');
+                }
+            },
+            attachedCallback: function () {
+                var self = this;
+                Polymer.RenderStatus.whenReady(function () {
+                    self.isAttached = true;
+                    self._doBehavior('attached');
+                });
+            },
+            detachedCallback: function () {
+                this.isAttached = false;
+                this._doBehavior('detached');
+            },
+            attributeChangedCallback: function (name, oldValue, newValue) {
+                this._attributeChangedImpl(name);
+                this._doBehavior('attributeChanged', [name, oldValue, newValue]);
+            },
+            _attributeChangedImpl: function (name) {
+                this._setAttributeToProperty(this, name);
+            },
+            extend: function (prototype, api) {
+                if (prototype && api) {
+                    var n$ = Object.getOwnPropertyNames(api);
+                    for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
+                        this.copyOwnProperty(n, api, prototype);
+                    }
+                }
+                return prototype || api;
+            },
+            mixin: function (target, source) {
+                for (var i in source) {
+                    target[i] = source[i];
+                }
+                return target;
+            },
+            copyOwnProperty: function (name, source, target) {
+                var pd = Object.getOwnPropertyDescriptor(source, name);
+                if (pd) {
+                    Object.defineProperty(target, name, pd);
+                }
+            },
+            _log: console.log.apply.bind(console.log, console),
+            _warn: console.warn.apply.bind(console.warn, console),
+            _error: console.error.apply.bind(console.error, console),
+            _logf: function () {
+                return this._logPrefix.concat([this.is]).concat(Array.prototype.slice.call(arguments, 0));
             }
-            return prototype || api;
-        },
-        mixin: function (target, source) {
-            for (var i in source) {
-                target[i] = source[i];
-            }
-            return target;
-        },
-        copyOwnProperty: function (name, source, target) {
-            var pd = Object.getOwnPropertyDescriptor(source, name);
-            if (pd) {
-                Object.defineProperty(target, name, pd);
-            }
-        },
-        _log: console.log.apply.bind(console.log, console),
-        _warn: console.warn.apply.bind(console.warn, console),
-        _error: console.error.apply.bind(console.error, console),
-        _logf: function () {
-            return this._logPrefix.concat([this.is]).concat(Array.prototype.slice.call(arguments, 0));
-        }
-    };
-    Polymer.Base._logPrefix = function () {
-        var color = window.chrome || /firefox/i.test(navigator.userAgent);
-        return color ? ['%c[%s::%s]:', 'font-weight: bold; background-color:#EEEE00;'] : ['[%s::%s]:'];
-    }();
-    Polymer.Base.chainObject = function (object, inherited) {
-        if (object && inherited && object !== inherited) {
-            if (!Object.__proto__) {
-                object = Polymer.Base.extend(Object.create(inherited), object);
-            }
-            object.__proto__ = inherited;
-        }
-        return object;
-    };
-    Polymer.Base = Polymer.Base.chainObject(Polymer.Base, HTMLElement.prototype);
-    if (window.CustomElements) {
-        Polymer.instanceof = CustomElements.instanceof;
-    } else {
-        Polymer.instanceof = function (obj, ctor) {
-            return obj instanceof ctor;
         };
-    }
-    Polymer.isInstance = function (obj) {
-        return Boolean(obj && obj.__isPolymerInstance__);
-    };
-    Polymer.telemetry.instanceCount = 0;
-    Polymer.Element = function () {};
-    Polymer.Element.prototype = Polymer.Base;
+        Polymer.Base._logPrefix = function () {
+            var color = window.chrome || /firefox/i.test(navigator.userAgent);
+            return color ? ['%c[%s::%s]:', 'font-weight: bold; background-color:#EEEE00;'] : ['[%s::%s]:'];
+        }();
+        Polymer.Base.chainObject = function (object, inherited) {
+            if (object && inherited && object !== inherited) {
+                if (!Object.__proto__) {
+                    object = Polymer.Base.extend(Object.create(inherited), object);
+                }
+                object.__proto__ = inherited;
+            }
+            return object;
+        };
+        Polymer.Base = Polymer.Base.chainObject(Polymer.Base, HTMLElement.prototype);
+        if (window.CustomElements) {
+            Polymer.instanceof = CustomElements.instanceof;
+        } else {
+            Polymer.instanceof = function (obj, ctor) {
+                return obj instanceof ctor;
+            };
+        }
+        Polymer.isInstance = function (obj) {
+            return Boolean(obj && obj.__isPolymerInstance__);
+        };
+        Polymer.telemetry.instanceCount = 0;
+        Polymer.Element = function () {};
+        Polymer.Element.prototype = Polymer.Base;
+    })();
     (function () {
         var modules = {};
         var lcModules = {};
@@ -689,7 +711,7 @@ define(['exports'], function (exports) {
             }
         }
     });
-    Polymer.version = '1.3.1';
+    Polymer.version = '1.4.0';
     Polymer.Base._addFeature({
         _registerFeatures: function () {
             this._prepIs();
@@ -5279,77 +5301,71 @@ define(['exports'], function (exports) {
                     }
                 }
             },
-            applyCss: function (cssText, moniker, target, afterNode) {
+            applyCss: function (cssText, moniker, target, contextNode) {
+                var style = this.createScopeStyle(cssText, moniker);
+                target = target || document.head;
+                var after = contextNode && contextNode.nextSibling || target.firstChild;
+                this.__lastHeadApplyNode = style;
+                return target.insertBefore(style, after);
+            },
+            createScopeStyle: function (cssText, moniker) {
                 var style = document.createElement('style');
                 if (moniker) {
                     style.setAttribute('scope', moniker);
                 }
                 style.textContent = cssText;
-                target = target || document.head;
-                if (!afterNode) {
-                    var n$ = target.querySelectorAll('style[scope]');
-                    afterNode = n$[n$.length - 1];
-                }
-                target.insertBefore(style, afterNode && afterNode.nextSibling || target.firstChild);
                 return style;
             },
-            cssFromModules: function (moduleIds, deep, warnIfNotFound) {
+            __lastHeadApplyNode: null,
+            applyStylePlaceHolder: function (moniker) {
+                var placeHolder = document.createComment(' Shady DOM styles for ' + moniker + ' ');
+                var after = this.__lastHeadApplyNode ? this.__lastHeadApplyNode.nextSibling : null;
+                var scope = document.head;
+                scope.insertBefore(placeHolder, after || scope.firstChild);
+                this.__lastHeadApplyNode = placeHolder;
+                return placeHolder;
+            },
+            cssFromModules: function (moduleIds, warnIfNotFound) {
                 var modules = moduleIds.trim().split(' ');
                 var cssText = '';
                 for (var i = 0; i < modules.length; i++) {
-                    cssText += this.cssFromModule(modules[i], deep, warnIfNotFound);
+                    cssText += this.cssFromModule(modules[i], warnIfNotFound);
                 }
                 return cssText;
             },
-            cssFromModule: function (moduleId, deep, warnIfNotFound) {
+            cssFromModule: function (moduleId, warnIfNotFound) {
                 var m = Polymer.DomModule.import(moduleId);
+                if (m && !m._cssText) {
+                    m._cssText = this.cssFromElement(m);
+                }
                 if (!m && warnIfNotFound) {
                     console.warn('Could not find style data in module named', moduleId);
                 }
-                return m ? this.cssFromElement(m, deep) : '';
+                return m && m._cssText || '';
             },
-            cssFromElement: function (element, deep) {
-                var cacheKey = deep ? '__cssTextDeep' : '__cssText';
-                if (!element[cacheKey]) {
-                    var cssText = '';
-                    var content = element.content || element;
-                    var e$ = Polymer.TreeApi.arrayCopy(content.querySelectorAll(this.MODULE_STYLES_SELECTOR));
-                    for (var i = 0, e; i < e$.length; i++) {
-                        e = e$[i];
-                        if (e.localName === 'template' && deep) {
-                            cssText += this.cssFromElement(e, deep);
-                        } else {
-                            if (e.localName === 'style') {
-                                var include = e.getAttribute(this.INCLUDE_ATTR);
-                                if (include) {
-                                    cssText += this.cssFromModules(include, true);
-                                }
-                                if (element.localName !== 'template') {
-                                    e = e.__appliedElement || e;
-                                    e.parentNode.removeChild(e);
-                                }
-                                cssText += this.resolveCss(e.textContent, element.ownerDocument);
-                            } else if (e.import && e.import.body) {
-                                cssText += this.resolveCss(e.import.body.textContent, e.import);
+            cssFromElement: function (element) {
+                var cssText = '';
+                var content = element.content || element;
+                var e$ = Polymer.TreeApi.arrayCopy(content.querySelectorAll(this.MODULE_STYLES_SELECTOR));
+                for (var i = 0, e; i < e$.length; i++) {
+                    e = e$[i];
+                    if (e.localName === 'template') {
+                        cssText += this.cssFromElement(e);
+                    } else {
+                        if (e.localName === 'style') {
+                            var include = e.getAttribute(this.INCLUDE_ATTR);
+                            if (include) {
+                                cssText += this.cssFromModules(include, true);
                             }
+                            e = e.__appliedElement || e;
+                            e.parentNode.removeChild(e);
+                            cssText += this.resolveCss(e.textContent, element.ownerDocument);
+                        } else if (e.import && e.import.body) {
+                            cssText += this.resolveCss(e.import.body.textContent, e.import);
                         }
                     }
-                    element[cacheKey] = cssText;
                 }
-                return element[cacheKey];
-            },
-            removeStyles: function (element) {
-                var s$ = element.querySelectorAll('style');
-                for (var i = 0, e; i < s$.length; i++) {
-                    e = s$[i];
-                    e = e.__appliedElement || e;
-                    e.parentNode.removeChild(e);
-                }
-            },
-            removeStyleRules: function (styles) {
-                for (var i = 0; i < styles.length; i++) {
-                    styles[i].__cssRules = null;
-                }
+                return cssText;
             },
             resolveCss: Polymer.ResolveUrl.resolveCss,
             parser: Polymer.CssParse,
@@ -5629,22 +5645,20 @@ define(['exports'], function (exports) {
                 prepElement.call(this, element);
             },
             _prepStyles: function () {
-                if (this._encapsulateStyle === undefined) {
-                    this._encapsulateStyle = !nativeShadow && Boolean(this._template);
+                if (!nativeShadow) {
+                    this._scopeStyle = styleUtil.applyStylePlaceHolder(this.is);
                 }
+            },
+            _prepShimStyles: function () {
                 if (this._template) {
-                    var template = this.__template || this._template;
+                    if (this._encapsulateStyle === undefined) {
+                        this._encapsulateStyle = !nativeShadow;
+                    }
                     this._styles = this._collectStyles();
-                    styleUtil.removeStyles(template.content);
                     var cssText = styleTransformer.elementStyles(this);
                     this._prepStyleProperties();
-                    var needsStatic = this._styles.length && !this._needsStyleProperties();
-                    if (needsStatic || !nativeShadow) {
-                        cssText = needsStatic ? cssText : ' ';
-                        var style = styleUtil.applyCss(cssText, this.is, nativeShadow ? template.content : null);
-                        if (!nativeShadow) {
-                            this._scopeStyle = style;
-                        }
+                    if (!this._needsStyleProperties() && this._styles.length) {
+                        styleUtil.applyCss(cssText, this.is, nativeShadow ? this._template.content : null, this._scopeStyle);
                     }
                 } else {
                     this._styles = [];
@@ -5656,11 +5670,14 @@ define(['exports'], function (exports) {
                     m$ = this.styleModules;
                 if (m$) {
                     for (var i = 0, l = m$.length, m; i < l && (m = m$[i]); i++) {
-                        cssText += styleUtil.cssFromModule(m, true);
+                        cssText += styleUtil.cssFromModule(m);
                     }
                 }
                 cssText += styleUtil.cssFromModule(this.is);
-                cssText += styleUtil.cssFromElement(this.__template || this._template, true);
+                var p = this._template && this._template.parentNode;
+                if (this._template && (!p || p.id.toLowerCase() !== this.is)) {
+                    cssText += styleUtil.cssFromElement(this._template);
+                }
                 if (cssText) {
                     var style = document.createElement('style');
                     style.textContent = cssText;
@@ -6297,8 +6314,11 @@ define(['exports'], function (exports) {
             this._prepIs();
             this._prepSuper();
             this._prepConstructor();
-            this._prepTemplate();
             this._prepStyles();
+        },
+        _finishRegisterFeatures: function () {
+            this._prepTemplate();
+            this._prepShimStyles();
             this._prepAnnotations();
             this._prepEffects();
             this._prepBehaviors();

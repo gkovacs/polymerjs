@@ -9,6 +9,9 @@ A special version of Polymer where:
 - It's based on the "extends" branch by default which means that you can write your elements as ES2015 classes that extends other custom elements. No need for Behaviors or composition for that anymore.
 - You can now use Polymer without HTML Imports and rely on ES2015 module loading instead.
 
+## Polymer version
+Polymer v1.4 (the extends branch has been merged in)
+
 ## Installation
 
 Install `polymerjs` as a dependency:

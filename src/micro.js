@@ -7,21 +7,20 @@ Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
     Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-
-    (function () {
-        function resolve() {
-            document.body.removeAttribute('unresolved');
-        }
-        if (window.WebComponents) {
-            addEventListener('WebComponentsReady', resolve);
+(function () {
+    function resolve() {
+        document.body.removeAttribute('unresolved');
+    }
+    if (window.WebComponents) {
+        addEventListener('WebComponentsReady', resolve);
+    } else {
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            resolve();
         } else {
-            if (document.readyState === 'interactive' || document.readyState === 'complete') {
-                resolve();
-            } else {
-                addEventListener('DOMContentLoaded', resolve);
-            }
+            addEventListener('DOMContentLoaded', resolve);
         }
-    }());
+    }
+}());
 window.Polymer = {
     Settings: function () {
         var settings = window.Polymer || {};
@@ -168,104 +167,125 @@ if (window.HTMLImports) {
 }
 Polymer.ImportStatus = Polymer.RenderStatus;
 Polymer.ImportStatus.whenLoaded = Polymer.ImportStatus.whenReady;
-Polymer.Base = {
-    __isPolymerInstance__: true,
-    _addFeature: function (feature) {
-        this.extend(this, feature);
-    },
-    registerCallback: function () {
-        this._desugarBehaviors();
-        this._doBehavior('beforeRegister');
-        this._registerFeatures();
-        this._doBehavior('registered');
-    },
-    createdCallback: function () {
-        Polymer.telemetry.instanceCount++;
-        this.root = this;
-        this._doBehavior('created');
-        this._initFeatures();
-    },
-    attachedCallback: function () {
-        var self = this;
-        Polymer.RenderStatus.whenReady(function () {
-            self.isAttached = true;
-            self._doBehavior('attached');
-        });
-    },
-    detachedCallback: function () {
-        this.isAttached = false;
-        this._doBehavior('detached');
-    },
-    attributeChangedCallback: function (name, oldValue, newValue) {
-        this._attributeChangedImpl(name);
-        this._doBehavior('attributeChanged', [
-            name,
-            oldValue,
-            newValue
-        ]);
-    },
-    _attributeChangedImpl: function (name) {
-        this._setAttributeToProperty(this, name);
-    },
-    extend: function (prototype, api) {
-        if (prototype && api) {
-            var n$ = Object.getOwnPropertyNames(api);
-            for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
-                this.copyOwnProperty(n, api, prototype);
+(function () {
+    'use strict';
+    var settings = Polymer.Settings;
+    Polymer.Base = {
+        __isPolymerInstance__: true,
+        _addFeature: function (feature) {
+            this.extend(this, feature);
+        },
+        registerCallback: function () {
+            this._desugarBehaviors();
+            this._doBehavior('beforeRegister');
+            this._registerFeatures();
+            if (!settings.lazyRegister) {
+                this.ensureRegisterFinished();
             }
+        },
+        createdCallback: function () {
+            if (!this.__hasRegisterFinished) {
+                this._ensureRegisterFinished(this.__proto__);
+            }
+            Polymer.telemetry.instanceCount++;
+            this.root = this;
+            this._doBehavior('created');
+            this._initFeatures();
+        },
+        ensureRegisterFinished: function () {
+            this._ensureRegisterFinished(this);
+        },
+        _ensureRegisterFinished: function (proto) {
+            if (proto.__hasRegisterFinished !== proto.is) {
+                proto.__hasRegisterFinished = proto.is;
+                if (proto._finishRegisterFeatures) {
+                    proto._finishRegisterFeatures();
+                }
+                proto._doBehavior('registered');
+            }
+        },
+        attachedCallback: function () {
+            var self = this;
+            Polymer.RenderStatus.whenReady(function () {
+                self.isAttached = true;
+                self._doBehavior('attached');
+            });
+        },
+        detachedCallback: function () {
+            this.isAttached = false;
+            this._doBehavior('detached');
+        },
+        attributeChangedCallback: function (name, oldValue, newValue) {
+            this._attributeChangedImpl(name);
+            this._doBehavior('attributeChanged', [
+                name,
+                oldValue,
+                newValue
+            ]);
+        },
+        _attributeChangedImpl: function (name) {
+            this._setAttributeToProperty(this, name);
+        },
+        extend: function (prototype, api) {
+            if (prototype && api) {
+                var n$ = Object.getOwnPropertyNames(api);
+                for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
+                    this.copyOwnProperty(n, api, prototype);
+                }
+            }
+            return prototype || api;
+        },
+        mixin: function (target, source) {
+            for (var i in source) {
+                target[i] = source[i];
+            }
+            return target;
+        },
+        copyOwnProperty: function (name, source, target) {
+            var pd = Object.getOwnPropertyDescriptor(source, name);
+            if (pd) {
+                Object.defineProperty(target, name, pd);
+            }
+        },
+        _log: console.log.apply.bind(console.log, console),
+        _warn: console.warn.apply.bind(console.warn, console),
+        _error: console.error.apply.bind(console.error, console),
+        _logf: function () {
+            return this._logPrefix.concat([this.is]).concat(Array.prototype.slice.call(arguments, 0));
         }
-        return prototype || api;
-    },
-    mixin: function (target, source) {
-        for (var i in source) {
-            target[i] = source[i];
-        }
-        return target;
-    },
-    copyOwnProperty: function (name, source, target) {
-        var pd = Object.getOwnPropertyDescriptor(source, name);
-        if (pd) {
-            Object.defineProperty(target, name, pd);
-        }
-    },
-    _log: console.log.apply.bind(console.log, console),
-    _warn: console.warn.apply.bind(console.warn, console),
-    _error: console.error.apply.bind(console.error, console),
-    _logf: function () {
-        return this._logPrefix.concat([this.is]).concat(Array.prototype.slice.call(arguments, 0));
-    }
-};
-Polymer.Base._logPrefix = function () {
-    var color = window.chrome || /firefox/i.test(navigator.userAgent);
-    return color ? [
-        '%c[%s::%s]:',
-        'font-weight: bold; background-color:#EEEE00;'
-    ] : ['[%s::%s]:'];
-}();
-Polymer.Base.chainObject = function (object, inherited) {
-    if (object && inherited && object !== inherited) {
-        if (!Object.__proto__) {
-            object = Polymer.Base.extend(Object.create(inherited), object);
-        }
-        object.__proto__ = inherited;
-    }
-    return object;
-};
-Polymer.Base = Polymer.Base.chainObject(Polymer.Base, HTMLElement.prototype);
-if (window.CustomElements) {
-    Polymer.instanceof = CustomElements.instanceof;
-} else {
-    Polymer.instanceof = function (obj, ctor) {
-        return obj instanceof ctor;
     };
-}
-Polymer.isInstance = function (obj) {
-    return Boolean(obj && obj.__isPolymerInstance__);
-};
-Polymer.telemetry.instanceCount = 0;
-Polymer.Element = function () {
-};
-Polymer.Element.prototype = Polymer.Base;
+    Polymer.Base._logPrefix = function () {
+        var color = window.chrome || /firefox/i.test(navigator.userAgent);
+        return color ? [
+            '%c[%s::%s]:',
+            'font-weight: bold; background-color:#EEEE00;'
+        ] : ['[%s::%s]:'];
+    }();
+    Polymer.Base.chainObject = function (object, inherited) {
+        if (object && inherited && object !== inherited) {
+            if (!Object.__proto__) {
+                object = Polymer.Base.extend(Object.create(inherited), object);
+            }
+            object.__proto__ = inherited;
+        }
+        return object;
+    };
+    Polymer.Base = Polymer.Base.chainObject(Polymer.Base, HTMLElement.prototype);
+    if (window.CustomElements) {
+        Polymer.instanceof = CustomElements.instanceof;
+    } else {
+        Polymer.instanceof = function (obj, ctor) {
+            return obj instanceof ctor;
+        };
+    }
+    Polymer.isInstance = function (obj) {
+        return Boolean(obj && obj.__isPolymerInstance__);
+    };
+    Polymer.telemetry.instanceCount = 0;
+    Polymer.Element = function () {
+    };
+    Polymer.Element.prototype = Polymer.Base;
+}());
 (function () {
     var modules = {};
     var lcModules = {};
@@ -688,7 +708,7 @@ Polymer.Base._addFeature({
         }
     }
 });
-Polymer.version = '1.3.1';
+Polymer.version = '1.4.0';
 Polymer.Base._addFeature({
     _registerFeatures: function () {
         this._prepIs();
