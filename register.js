@@ -45,7 +45,6 @@ export function registerElement(element) {
     const DOM_MODULE = document.createElement('dom-module');
     const STYLES = document.createElement('style', 'custom-style');
     const HTML = document.createElement('template');
-    console.log(element.elementName);
 
     DOM_MODULE.id = element.prototype.elementName || element.elementName;
     DOM_MODULE.appendChild(STYLES);
