@@ -93,7 +93,7 @@ class HelloComponent {
        };
    }
 
-   static get styles () {
+   get styles () {
        return `
            :host([planet="earth"]) {
                background-color: blue;
@@ -105,7 +105,7 @@ class HelloComponent {
        `;
    }
 
-   static get html () {
+   get html () {
        return `<p class="works-too">Hello, [[planet]]!`;
    }
 }
@@ -134,7 +134,7 @@ class LessCoolComponent extends ButtonComponent {
         this.is = "less-cool-component";
     }
     
-    static get html () {
+    get html () {
         return `<p>Even though I'm less cool, [[coolProperty]]</p>`
     }
 }
@@ -143,20 +143,57 @@ registerElement(ButtonComponent);
 registerElement(LessCoolComponent);
 ```
 
-If your element should have markup, define it in a static html getter:
+If your element should have markup, define it in a html getter:
 ```javascript
-static get html () {
+get html () {
     return `<p>This is the markup for my element.</p>`
 }
 ```
-If your element should have styles, define it in a static styles getter:
+If your element should have styles, define it in a styles getter:
 ```javascript
-static get styles () {
+get styles () {
     return `
         :host {
             background-color: red;
         }
     `
+}
+```
+
+You can even extend the markup or styling of the super class like this:
+
+```javascript
+class ButtonComponent {
+    ...
+    
+    get styles () {
+        return `
+            :host {
+                background-color: red;
+            }
+        `;
+    }
+    
+    get html () {
+        return `<p>This came from the super class</p>`
+    }
+}
+
+class LessCoolComponent extends ButtonComponent {
+    
+    ...
+    
+    get styles () {
+        return super.styles + `
+            p {
+                color: green;
+            }
+        `;
+    }
+    
+    get html () {
+        return super.html + `<p>This came from the subclass</p>`
+    }
 }
 ```
 
@@ -210,7 +247,7 @@ import * as Color from "styles/color";
 
 ...
 
-static get styles () {
+get styles () {
     return `
         :host p {
             color: &{Color.AWESOME};
@@ -225,7 +262,7 @@ static get styles () {
 With the full force of JavaScript at your disposal, you can also do stuff like:
 
 ```javascript
-static get HTML () {
+get HTML () {
     return `
         <p>G&{"oo".repeat(1000)}gle</p>
     `;

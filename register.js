@@ -30,7 +30,7 @@
  *          `;
  *      }
  *
- *      static get html () {
+ *      get html () {
  *          return `<p class="works-too">Hello, [[planet]]`;
  *      }
  * }
@@ -38,26 +38,31 @@
  * registerElement(HelloComponent);
  *
  * @author Frederik Wessberg [fwe@dlmma.com]
- * @param {object} prototype - the prototype of the element.
+ * @param {object} element - the prototype of the element.
  */
 
-export function registerElement(prototype) {
+export function registerElement(element) {
     const DOM_MODULE = document.createElement('dom-module');
     const STYLES = document.createElement('style', 'custom-style');
     const HTML = document.createElement('template');
+    console.log(element.elementName);
 
-    DOM_MODULE.id = prototype.elementName;
+    DOM_MODULE.id = element.prototype.elementName || element.elementName;
     DOM_MODULE.appendChild(STYLES);
-    if (prototype.styles != null) {
-        STYLES.textContent = prototype.styles;
+    if (element.prototype.styles != null) {
+        STYLES.textContent = element.prototype.styles;
+    } else if (element.styles != null) {
+        STYLES.textContent = element.styles;
     }
     DOM_MODULE.appendChild(HTML);
-    if (prototype.html != null) {
-        HTML.innerHTML = prototype.html;
+    if (element.prototype.html != null) {
+        HTML.innerHTML = element.prototype.html;
+    } else if (element.styles != null) {
+        HTML.innerHTML = element.html;
     }
 
     DOM_MODULE.createdCallback();
-    return Polymer(prototype);
+    return Polymer(element);
 }
 
 /**
