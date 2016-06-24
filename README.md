@@ -9,6 +9,12 @@ A special version of Polymer where:
 - It's based on the "extends" branch by default which means that you can write your elements as ES2015 classes that extends other custom elements. No need for Behaviors or composition for that anymore.
 - You can now use Polymer without HTML Imports and rely on ES2015 module loading instead.
 
+## What's new?
+With release v1.0.19 comes:
+- Interfaces - elements can implement interfaces. Polymerjs will do strict type checking and signature matching and fail hard if needed. (see guides below)
+- Behaviors + extensions - You cannot extend more than 1 class in Javascript, and until now you couldn't extend a class and mix in behaviors simultaneously. Now you can (see guides below).
+- Precompiled down to ES5 - You don't need to compile down yourself anymore.
+
 ## Polymer version
 Polymer v1.4 (the extends branch has been merged in)
 
@@ -142,6 +148,56 @@ class LessCoolComponent extends ButtonComponent {
 registerElement(ButtonComponent);
 registerElement(LessCoolComponent);
 ```
+
+You can also mix in a Behavior like this:
+
+```javascript
+class AnimalComponent {
+    beforeRegister () {
+        this.is = "animal-component";
+    }
+    
+    get behaviors () {
+        return [CoolBehavior, OtherCoolBehavior];
+    }
+}
+
+registerElement(AnimalComponent);
+```
+
+If you already extend another class, you won't be able to use behaviors like in the example above.
+Instead, use the included helper function `registerBehavior(<class>, <behavior>)`:
+
+```javascript
+import {registerElement, registerBehavior} from "polymerjs/register";
+
+class DogComponent extends AnimalComponent  {
+    beforeRegister () {
+        this.is = "dog-component";
+    }
+}
+
+registerBehavior(DogComponent, CoolBehavior); 
+registerElement(DogComponent);
+```
+
+As a new Polymer-independent feature, polymerjs also supports Java-style interfaces.
+You can npm install this npm package for gulp to allow the `class <classname> implements <interface>` syntax: `gulp-class-implements-polymerjs`.
+It will automatically transform your code into the following code. If you don't use the npm package, here's how to do it:
+
+```javascript
+import {registerElement, implementsInterface} from "polymerjs/register";
+import Sleeper from "../interfaces/Sleeper";
+
+class DogComponent extends AnimalComponent {
+    //Code here
+}
+
+registerElement(DogComponent);
+implementsInterface(DogComponent, Sleeper)
+```
+
+It's very important that the call of `implementsInterface()` is positioned AFTER `registerElement()`.
 
 If your element should have markup, define it in a html getter:
 ```javascript
