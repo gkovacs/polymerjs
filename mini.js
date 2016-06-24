@@ -848,8 +848,9 @@ define(['exports'], function (exports) {
                     distances[i] = new Array(columnCount);
                     distances[i][0] = i;
                 }
-                for (var j = 0; j < columnCount; j++) distances[0][j] = j;
-                for (i = 1; i < rowCount; i++) {
+                for (var j = 0; j < columnCount; j++) {
+                    distances[0][j] = j;
+                }for (i = 1; i < rowCount; i++) {
                     for (j = 1; j < columnCount; j++) {
                         if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1])) distances[i][j] = distances[i - 1][j - 1];else {
                             var north = distances[i - 1][j] + 1;
@@ -916,8 +917,9 @@ define(['exports'], function (exports) {
                 if (currentEnd - currentStart == 0 && oldEnd - oldStart == 0) return [];
                 if (currentStart == currentEnd) {
                     var splice = newSplice(currentStart, [], 0);
-                    while (oldStart < oldEnd) splice.removed.push(old[oldStart++]);
-                    return [splice];
+                    while (oldStart < oldEnd) {
+                        splice.removed.push(old[oldStart++]);
+                    }return [splice];
                 } else if (oldStart == oldEnd) return [newSplice(currentStart, [], currentEnd - currentStart)];
                 var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
                 splice = undefined;
@@ -959,15 +961,17 @@ define(['exports'], function (exports) {
                 return splices;
             },
             sharedPrefix: function (current, old, searchLength) {
-                for (var i = 0; i < searchLength; i++) if (!this.equals(current[i], old[i])) return i;
-                return searchLength;
+                for (var i = 0; i < searchLength; i++) {
+                    if (!this.equals(current[i], old[i])) return i;
+                }return searchLength;
             },
             sharedSuffix: function (current, old, searchLength) {
                 var index1 = current.length;
                 var index2 = old.length;
                 var count = 0;
-                while (count < searchLength && this.equals(current[--index1], old[--index2])) count++;
-                return count;
+                while (count < searchLength && this.equals(current[--index1], old[--index2])) {
+                    count++;
+                }return count;
             },
             calculateSplices: function (current, previous) {
                 return this.calcSplices(current, 0, current.length, previous, 0, previous.length);
