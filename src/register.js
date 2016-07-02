@@ -46,7 +46,7 @@ export function registerElement(element) {
     const STYLES = document.createElement('style', 'custom-style');
     const HTML = document.createElement('template');
 
-    DOM_MODULE.id = element.prototype.elementName || element.elementName;
+    DOM_MODULE.id = element.prototype.elementName || element.elementName || element.prototype.is || element.is;
     DOM_MODULE.appendChild(STYLES);
     if (element.prototype.styles != null) {
         STYLES.textContent = element.prototype.styles;
