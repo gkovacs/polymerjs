@@ -56,7 +56,7 @@ export function registerElement(element) {
     DOM_MODULE.appendChild(HTML);
     if (element.prototype.html != null) {
         HTML.innerHTML = element.prototype.html;
-    } else if (element.styles != null) {
+    } else if (element.html != null) {
         HTML.innerHTML = element.html;
     }
 
