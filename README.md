@@ -112,7 +112,7 @@ class HelloComponent {
    }
 
    get html () {
-       return `<p class="works-too">Hello, [[planet]]!`;
+       return `<p class="works-too">Hello, [[planet]]!</p>`;
    }
 }
 
